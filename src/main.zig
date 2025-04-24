@@ -1,4 +1,6 @@
 const std = @import("std");
+const testing = std.testing;
+
 const EnumIndexer = std.enums.EnumIndexer;
 const EnumFieldStruct = std.enums.EnumFieldStruct;
 
@@ -71,7 +73,7 @@ pub fn PackedEnumSet(comptime E: type) type {
             self.bits.set(Indexer.indexOf(key));
         }
 
-        pub fn remove(self: *Self, key, Key) void {
+        pub fn remove(self: *Self, key: Key) void {
             self.bits.unset(Indexer.indexOf(key));
         }
 
@@ -148,3 +150,112 @@ pub fn PackedEnumSet(comptime E: type) type {
     };
 }
 
+test "PackedEnumSet Fns" {
+    const Suit = enum { spades, hearts, clubs, diamonds };
+
+    const empty = PackedEnumSet(Suit).initEmpty();
+    const full = PackedEnumSet(Suit).initFull();
+    const black = PackedEnumSet(Suit).initMany(&[_]Suit{ .spades, .clubs });
+    const red = PackedEnumSet(Suit).initMany(&[_]Suit{ .hearts, .diamonds });
+
+    try testing.expect(empty.eql(empty));
+    try testing.expect(full.eql(full));
+    try testing.expect(!empty.eql(full));
+    try testing.expect(!full.eql(empty));
+    try testing.expect(!empty.eql(black));
+    try testing.expect(!full.eql(red));
+    try testing.expect(!red.eql(empty));
+    try testing.expect(!black.eql(full));
+
+    try testing.expect(empty.subsetOf(empty));
+    try testing.expect(empty.subsetOf(full));
+    try testing.expect(full.subsetOf(full));
+    try testing.expect(!black.subsetOf(red));
+    try testing.expect(!red.subsetOf(black));
+
+    try testing.expect(full.supersetOf(full));
+    try testing.expect(full.supersetOf(empty));
+    try testing.expect(empty.supersetOf(empty));
+    try testing.expect(!black.supersetOf(red));
+    try testing.expect(!red.supersetOf(black));
+
+    try testing.expect(empty.complement().eql(full));
+    try testing.expect(full.complement().eql(empty));
+    try testing.expect(black.complement().eql(red));
+    try testing.expect(red.complement().eql(black));
+
+    try testing.expect(empty.unionWith(empty).eql(empty));
+    try testing.expect(empty.unionWith(full).eql(full));
+    try testing.expect(full.unionWith(full).eql(full));
+    try testing.expect(full.unionWith(empty).eql(full));
+    try testing.expect(black.unionWith(red).eql(full));
+    try testing.expect(red.unionWith(black).eql(full));
+
+    try testing.expect(empty.intersectWith(empty).eql(empty));
+    try testing.expect(empty.intersectWith(full).eql(empty));
+    try testing.expect(full.intersectWith(full).eql(full));
+    try testing.expect(full.intersectWith(empty).eql(empty));
+    try testing.expect(black.intersectWith(red).eql(empty));
+    try testing.expect(red.intersectWith(black).eql(empty));
+
+    try testing.expect(empty.xorWith(empty).eql(empty));
+    try testing.expect(empty.xorWith(full).eql(full));
+    try testing.expect(full.xorWith(full).eql(empty));
+    try testing.expect(full.xorWith(empty).eql(full));
+    try testing.expect(black.xorWith(red).eql(full));
+    try testing.expect(red.xorWith(black).eql(full));
+
+    try testing.expect(empty.differenceWith(empty).eql(empty));
+    try testing.expect(empty.differenceWith(full).eql(empty));
+    try testing.expect(full.differenceWith(full).eql(empty));
+    try testing.expect(full.differenceWith(empty).eql(full));
+    try testing.expect(full.differenceWith(red).eql(black));
+    try testing.expect(full.differenceWith(black).eql(red));
+}
+
+test "PackedEnumSet empty" {
+    const E = enum {};
+    const empty = PackedEnumSet(E).initEmpty();
+    const full = PackedEnumSet(E).initFull();
+
+    try std.testing.expect(empty.eql(full));
+    try std.testing.expect(empty.complement().eql(full));
+    try std.testing.expect(empty.complement().eql(full.complement()));
+    try std.testing.expect(empty.eql(full.complement()));
+}
+
+// All zig EnumSet tests
+// test "PackedEnumSet const iterator" {
+//     const Direction = enum { up, down, left, right };
+//     const diag_move = init: {
+//         var move = PackedEnumSet(Direction).initEmpty();
+//         move.insert(.right);
+//         move.insert(.up);
+//         break :init move;
+//     };
+//
+//     var result = PackedEnumSet(Direction).initEmpty();
+//     var it = diag_move.iterator();
+//     while (it.next()) |dir| {
+//         result.insert(dir);
+//     }
+//
+//     try testing.expect(result.eql(diag_move));
+// }
+
+// test "PackedEnumSet non-exhaustive" {
+//     const BitIndices = enum(u4) {
+//         a = 0,
+//         b = 1,
+//         c = 4,
+//         _,
+//     };
+//     const BitField = PackedEnumSet(BitIndices);
+//
+//     var flags = BitField.init(.{ .a = true, .b = true });
+//     flags.insert(.c);
+//     flags.remove(.a);
+//     try testing.expect(!flags.contains(.a));
+//     try testing.expect(flags.contains(.b));
+//     try testing.expect(flags.contains(.c));
+// }
