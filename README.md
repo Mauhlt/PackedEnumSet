@@ -1,5 +1,14 @@
 # Goal:
-- Modify an EnumSet such that it works with C extern fns
+- Create set that takes in enum keys and outputs d.s. that works with Vulkan extern vk fns (not extern fns)
+
+# How?
+1. Combine EnumSet, BitSet, PackedStruct
+- packed struct = works with extern structs
+- enumset = pass keys instead of values to get outcomes
+- bitset = use these fns to modify internal bits which then get passed to extern vk fns 
+2. Convert FlagBits to Masks
+- take the tag type of flagbits to set internal maskint
+- take log2 of flagbit value and set that bit position
 
 ## Getting Started:
 Add  `PackedEnumSet` to your `build.zig.zon` .dependencies with:
@@ -15,7 +24,7 @@ exe.root_module.addImport("PackedEnumSet", packedenumset.module("PackedEnumSet")
 
 Now in your code, import `packedenumset`
 ```zig
-const pes = @import("PackedEnumSet");
+const PES = @import("PackedEnumSet");
 ```
 
 Example Use Case:
