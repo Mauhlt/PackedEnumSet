@@ -64,8 +64,87 @@ pub fn PackedEnumSet(comptime E: type) type {
         }
 
         pub fn contains(self: Self, key: Key) bool {
-            return self.bits.isSet(Indexer);
+            return self.bits.isSet(key);
         }
+
+        pub fn insert(self: *Self, key: Key) void {
+            self.bits.set(Indexer.indexOf(key));
+        }
+
+        pub fn remove(self: *Self, key, Key) void {
+            self.bits.unset(Indexer.indexOf(key));
+        }
+
+        pub fn setPresent(self: *Self, key: Key, present: bool) void {
+            self.bits.setValue(Indexer.indexOf(key), present);
+        }
+
+        pub fn toggle(self: *Self, key: Key) void {
+            self.bits.toggle(Indexer.indexOf(key));
+        }
+
+        pub fn toggleSet(self: *Self, other: Self) void {
+            self.bits.toggleSet(other.bits);
+        }
+
+        pub fn toggleAll(self: *Self, other: Self) void {
+            self.bits.toggleSet(other.bits);
+        }
+
+        pub fn setUnion(self: *Self, other: Self) void {
+            self.bits.setUnion(other.bits);
+        }
+
+        pub fn setIntersection(self: *Self, other: Self) void {
+            self.bits.setIntersection(other.bits);
+        }
+
+        pub fn eql(self: Self, other: Self) bool {
+            return self.bits.eql(other.bits);
+        }
+
+        pub fn subsetOf(self: Self, other: Self) bool {
+            return self.bits.subsetOf(other.bits);
+        }
+
+        pub fn supersetOf(self: Self, other: Self) bool {
+            return self.bits.supersetOf(other.bits);
+        }
+
+        pub fn complement(self: Self) Self {
+            return .{ .bits = self.bits.complement() };
+        }
+
+        pub fn unionWith(self: Self, other: Self) Self {
+            return .{ .bits = self.bits.unionWith(other.bits) };
+        }
+
+        pub fn intersectWith(self: Self, other: Self) Self {
+            return .{ .bits = self.bits.intersectWith(other.bits) };
+        }
+
+        pub fn xorWith(self: Self, other: Self) Self {
+            return .{ .bits = self.bits.xorWith(other.bits) };
+        }
+
+        pub fn differenceWith(self: Self, other: Self) Self {
+            return .{ .bits = self.bits.differenceWith(other.bits) };
+        }
+
+        pub fn iterator(self: *const Self) Iterator {
+            return .{ .inner = self.bits.iterator() };
+        }
+
+        pub const Iterator = struct {
+            inner: BitSet.Iterator(.{}),
+
+            pub fn next(self: *Iterator) ?Key {
+                return if (self.inner.next()) |index|
+                    Indexer.keyForIndex(index)
+                else
+                    null;
+            }
+        };
     };
 }
 
