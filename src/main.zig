@@ -86,6 +86,14 @@ pub fn PackedEnumSet(comptime E: type) type {
         pub fn setIntersection(self: *Self, other: Self) void {
             self.bits &= other.bits;
         }
+
+        pub fn findFirstSet(self: Self) ?usize {
+            return @ctz(self.bits);
+        }
+
+        pub fn findLastSet(self: Self) ?usize {
+            return @clz(self.bits);
+        }
     };
 }
 
