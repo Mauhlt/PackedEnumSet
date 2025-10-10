@@ -62,7 +62,7 @@ pub fn PackedEnumSet(comptime E: type) type {
         }
 
         pub fn eql(self: Self, other: Self) bool {
-            self.bits == other.bits;
+            return self.bits == other.bits;
         }
 
         pub fn subsetOf(self: Self, other: Self) bool {
