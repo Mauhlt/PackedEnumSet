@@ -60,6 +60,32 @@ pub fn PackedEnumSet(comptime E: type) type {
         pub fn unset(self: *Self, key: Key) void {
             self.bits &= ~@intFromEnum(key);
         }
+
+        pub fn eql(self: Self, other: Self) bool {
+            self.bits == other.bits;
+        }
+
+        pub fn subsetOf(self: Self, other: Self) bool {
+            return self.intersectWith(other).eql(self);
+        }
+
+        pub fn supersetOf(self: *const Self, other: *const Self) bool {
+            return other.subsetOf(self);
+        }
+
+        pub fn intersectWith(self: Self, other: Self) Self {
+            var result = self;
+            result.setIntersection(other);
+            return result;
+        }
+
+        pub fn setUnion(self: *Self, other: Self) void {
+            self.bits |= other.bits;
+        }
+
+        pub fn setIntersection(self: *Self, other: Self) void {
+            self.bits &= other.bits;
+        }
     };
 }
 
