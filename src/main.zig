@@ -69,7 +69,7 @@ pub fn PackedEnumSet(comptime E: type) type {
             return self.intersectWith(other).eql(self);
         }
 
-        pub fn supersetOf(self: *const Self, other: *const Self) bool {
+        pub fn supersetOf(self: Self, other: Self) bool {
             return other.subsetOf(self);
         }
 
