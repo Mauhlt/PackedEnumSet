@@ -23,7 +23,7 @@ pub fn PackedEnumSet(comptime E: type) type {
     return packed struct {
         const Self = @This();
         pub const Indexer = EnumIndexer(E);
-        pub const Key = Indexer.Key;
+        pub const Key = E; // Indexer.Key; // do i want indexer.key or do i want the type?
 
         bits: tt = 0,
 
